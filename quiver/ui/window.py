@@ -70,7 +70,7 @@ class QuiverWindow(QMainWindow):
         self.title_layout.addStretch()
         
         self.close_btn = QPushButton("✕")
-        self.close_btn.setFixedSize(30, 30)
+        self.close_btn.setFixedSize(32, 32)
         self.close_btn.clicked.connect(self.hide)
         self.close_btn.setStyleSheet("QPushButton { background-color: transparent; color: #888; border: none; } QPushButton:hover { color: #F44336; }")
         self.title_layout.addWidget(self.close_btn)
@@ -109,14 +109,14 @@ class QuiverWindow(QMainWindow):
         self.log_button = QPushButton("LOGS")
         self.log_button.setObjectName("LogButton")
         self.log_button.setFixedWidth(100)
-        self.log_button.setStyleSheet("color: #888; border: none; font-weight: bold;")
+        self.log_button.setStyleSheet("color: #899; border: none; font-weight: bold;")
         self.log_button.clicked.connect(self.toggle_logs)
         self.bottom_layout.addWidget(self.log_button)
         
         self.reload_button = QPushButton("RELOAD")
         self.reload_button.setFixedWidth(100)
         self.reload_button.clicked.connect(self.reload_config)
-        self.reload_button.setStyleSheet("color: #888; border: none; font-weight: bold;")
+        self.reload_button.setStyleSheet("color: #899; border: none; font-weight: bold;")
         self.bottom_layout.addWidget(self.reload_button)
 
         self.bottom_layout.addStretch()
@@ -124,7 +124,7 @@ class QuiverWindow(QMainWindow):
         self.quit_button = QPushButton("QUIT")
         self.quit_button.setFixedWidth(100)
         self.quit_button.clicked.connect(self.quit_app)
-        self.quit_button.setStyleSheet("color: #888; border: 1px solid red; font-weight: bold;")
+        self.quit_button.setStyleSheet("color: #899; border: 1px solid red; font-weight: bold;")
         self.bottom_layout.addWidget(self.quit_button)
         
         self.layout.addWidget(self.bottom_bar)
