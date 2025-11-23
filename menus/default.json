@@ -1,0 +1,48 @@
+[
+    {
+        "label": "Notepad",
+        "type": "program",
+        "command": "notepad.exe"
+    },
+    {
+        "label": "Calculator",
+        "type": "program",
+        "command": "calc.exe"
+    },
+    {
+        "label": "Echo Date",
+        "type": "bat",
+        "command": "echo_date.bat"
+    },
+    {
+        "label": "Python Hello",
+        "type": "python",
+        "command": "hello.py"
+    },
+    {
+        "label": "My IP Address",
+        "type": "text",
+        "content": "192.168.1.100"
+    },
+    {
+        "label": "Date Text",
+        "type": "text",
+        "content": "Today is <<DATE>>"
+    },
+    {
+        "label": "Tools",
+        "type": "menu",
+        "items": [
+            {
+                "label": "Submenu Item 1",
+                "type": "text",
+                "content": "You clicked item 1"
+            },
+            {
+                "label": "Submenu Item 2",
+                "type": "text",
+                "content": "You clicked item 2"
+            }
+        ]
+    }
+]
