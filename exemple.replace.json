@@ -1,0 +1,10 @@
+{
+    "<<DATE>>": {
+        "type": "python",
+        "command": "get_date.py"
+    },
+    "<<USER>>": {
+        "type": "bat",
+        "command": "get_user.bat"
+    }
+}

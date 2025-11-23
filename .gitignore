@@ -5,6 +5,9 @@ build/
 dist/
 wheels/
 *.egg-info
+menus/*
+replace.json
+config.json
 
 # Virtual environments
 .venv

@@ -38,13 +38,14 @@ class QuiverWindow(QMainWindow):
         self.setWindowTitle("Quiver")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.resize(600, 400)
+        self.resize(500, 400)
         
         # Data
         self.menus = load_menus()
         self.replace_config = load_replacements()
         self.current_items = []
         self.menu_stack = [] # Stack to track sub-menus
+        self.old_pos = None
         
         # UI Setup
         self.central_widget = QWidget()
@@ -56,9 +57,30 @@ class QuiverWindow(QMainWindow):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         
+        # Title Bar
+        self.title_bar = QWidget()
+        self.title_bar.setFixedHeight(30)
+        self.title_bar.setStyleSheet("background-color: #3c3f41; border-top-left-radius: 10px; border-top-right-radius: 10px;")
+        self.title_layout = QHBoxLayout(self.title_bar)
+        self.title_layout.setContentsMargins(10, 0, 10, 0)
+        
+        self.title_label = QLabel("🏹 Quiver")
+        self.title_label.setStyleSheet("color: #e6e6e6; font-weight: bold; border: none;")
+        self.title_layout.addWidget(self.title_label)
+        self.title_layout.addStretch()
+        
+        self.close_btn = QPushButton("✕")
+        self.close_btn.setFixedSize(30, 30)
+        self.close_btn.clicked.connect(self.hide)
+        self.close_btn.setStyleSheet("QPushButton { background-color: transparent; color: #888; border: none; } QPushButton:hover { color: #F44336; }")
+        self.title_layout.addWidget(self.close_btn)
+        
+        self.layout.addWidget(self.title_bar)
+        
         # Tabs
         self.tabs = QTabWidget()
         self.tabs.currentChanged.connect(self.on_tab_changed)
+        self.tabs.setFixedHeight(30)
         self.layout.addWidget(self.tabs)
         
         # Search
@@ -86,12 +108,13 @@ class QuiverWindow(QMainWindow):
         
         self.log_button = QPushButton("LOGS")
         self.log_button.setObjectName("LogButton")
-        self.log_button.setFixedWidth(50)
+        self.log_button.setFixedWidth(100)
+        self.log_button.setStyleSheet("color: #888; border: none; font-weight: bold;")
         self.log_button.clicked.connect(self.toggle_logs)
         self.bottom_layout.addWidget(self.log_button)
         
         self.reload_button = QPushButton("RELOAD")
-        self.reload_button.setFixedWidth(60)
+        self.reload_button.setFixedWidth(100)
         self.reload_button.clicked.connect(self.reload_config)
         self.reload_button.setStyleSheet("color: #888; border: none; font-weight: bold;")
         self.bottom_layout.addWidget(self.reload_button)
@@ -99,9 +122,9 @@ class QuiverWindow(QMainWindow):
         self.bottom_layout.addStretch()
         
         self.quit_button = QPushButton("QUIT")
-        self.quit_button.setFixedWidth(50)
+        self.quit_button.setFixedWidth(100)
         self.quit_button.clicked.connect(self.quit_app)
-        self.quit_button.setStyleSheet("color: #888; border: none; font-weight: bold;")
+        self.quit_button.setStyleSheet("color: #888; border: 1px solid red; font-weight: bold;")
         self.bottom_layout.addWidget(self.quit_button)
         
         self.layout.addWidget(self.bottom_bar)
@@ -134,10 +157,23 @@ class QuiverWindow(QMainWindow):
             self.current_items = self.menus[first_key]
             self.update_list()
 
+    def get_display_label(self, item):
+        itype = item.get("type", "unknown")
+        label = item.get("label", "Unknown")
+        
+        icon = "🔹"
+        if itype == "program": icon = "🚀"
+        elif itype == "bat": icon = "⚙️"
+        elif itype == "python": icon = "🐍"
+        elif itype == "text": icon = "📝"
+        elif itype == "menu": icon = "📁"
+        
+        return f"{icon}  {label}"
+
     def update_list(self):
         self.list_widget.clear()
         for item in self.current_items:
-            self.list_widget.addItem(item.get("label", "Unknown"))
+            self.list_widget.addItem(self.get_display_label(item))
 
     def on_tab_changed(self, index):
         tab_name = self.tabs.tabText(index)
@@ -150,13 +186,13 @@ class QuiverWindow(QMainWindow):
         self.list_widget.clear()
         
         if self.menu_stack:
-            self.list_widget.addItem(".. (Back)")
+            self.list_widget.addItem("🔙  .. (Back)")
 
         text = text.lower()
         for item in self.current_items:
             label = item.get("label", "Unknown")
             if text in label.lower():
-                self.list_widget.addItem(label)
+                self.list_widget.addItem(self.get_display_label(item))
         
         if self.list_widget.count() > 0:
             self.list_widget.setCurrentRow(0)
@@ -166,11 +202,19 @@ class QuiverWindow(QMainWindow):
         if current_row < 0:
             return
             
-        item_label = self.list_widget.item(current_row).text()
+        item_text = self.list_widget.item(current_row).text()
         
-        if item_label == ".. (Back)":
+        if "🔙" in item_text:
             self.go_back()
             return
+
+        # Extract label (remove icon and spacing)
+        # Assuming format "ICON  Label"
+        parts = item_text.split("  ", 1)
+        if len(parts) > 1:
+            item_label = parts[1]
+        else:
+            item_label = item_text
 
         # Find item data
         selected_item = next((i for i in self.current_items if i["label"] == item_label), None)
@@ -246,3 +290,17 @@ class QuiverWindow(QMainWindow):
             self.hide()
         else:
             super().keyPressEvent(event)
+
+    # Dragging Logic
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.old_pos = event.globalPosition().toPoint()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.MouseButton.LeftButton and self.old_pos:
+            delta = event.globalPosition().toPoint() - self.old_pos
+            self.move(self.x() + delta.x(), self.y() + delta.y())
+            self.old_pos = event.globalPosition().toPoint()
+
+    def mouseReleaseEvent(self, event):
+        self.old_pos = None

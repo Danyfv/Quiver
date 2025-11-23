@@ -1,8 +1,8 @@
 STYLESHEET = """
 QMainWindow {
-    background-color: rgba(43, 43, 43, 220);
-    border: 1px solid #444;
-    border-radius: 10px;
+    background-color: rgba(43, 43, 43, 240);
+    border: 2px solid #4CAF50;
+    border-radius: 12px;
 }
 
 QLineEdit {
@@ -47,22 +47,54 @@ QTabBar::tab:selected {
     background: #3c3f41;
 }
 
-QPushButton#LogButton {
-    background-color: transparent;
-    color: #888;
-    border: none;
+QPushButton {
+    background-color: #3c3f41;
+    color: #a9b7c6;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 5px 10px;
     font-weight: bold;
+    font-family: "Segoe UI", sans-serif;
 }
 
-QPushButton#LogButton:hover {
+QPushButton:hover {
+    background-color: #4b6eaf;
+    color: white;
+    border-color: #4b6eaf;
+}
+
+QPushButton:pressed {
+    background-color: #365880;
+}
+
+QListWidget {
+    background-color: #2b2b2b;
     color: #e6e6e6;
+    border: none;
+    font-size: 14px;
+    font-family: "Segoe UI", sans-serif;
+    outline: none;
+}
+
+QListWidget::item {
+    padding: 8px;
+    border-bottom: 1px solid #3c3f41;
+}
+
+QListWidget::item:selected {
+    background-color: #4b6eaf;
+    color: white;
+    border-radius: 4px;
+    border-bottom: none;
 }
 
 QTextEdit {
     background-color: #1e1e1e;
     color: #a9b7c6;
-    border: none;
+    border: 1px solid #444;
+    border-radius: 4px;
     font-family: Consolas, monospace;
     font-size: 12px;
+    margin-top: 5px;
 }
 """
