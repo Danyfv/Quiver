@@ -154,7 +154,7 @@ class QuiverWindow(QMainWindow):
         # Load initial items
         if self.menus:
             first_key = list(self.menus.keys())[0]
-            self.current_items = self.menus[first_key]
+            self.current_items = sorted(self.menus[first_key], key=lambda x: x.get("label", "").lower())
             self.update_list()
 
     def get_display_label(self, item):
@@ -178,7 +178,7 @@ class QuiverWindow(QMainWindow):
     def on_tab_changed(self, index):
         tab_name = self.tabs.tabText(index)
         if tab_name in self.menus:
-            self.current_items = self.menus[tab_name]
+            self.current_items = sorted(self.menus[tab_name], key=lambda x: x.get("label", "").lower())
             self.menu_stack = [] # Reset stack on tab change
             self.filter_items(self.search_bar.text())
 
@@ -266,7 +266,7 @@ class QuiverWindow(QMainWindow):
 
     def enter_submenu(self, item):
         self.menu_stack.append(self.current_items)
-        self.current_items = item.get("items", [])
+        self.current_items = sorted(item.get("items", []), key=lambda x: x.get("label", "").lower())
         self.search_bar.clear()
         self.filter_items("")
 

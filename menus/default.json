@@ -15,7 +15,7 @@
         "command": "echo_date.bat"
     },
     {
-        "label": "Python Hello",
+        "label": "Scrivi numeri fino al copiato",
         "type": "python",
         "command": "hello.py"
     },
@@ -42,6 +42,17 @@
                 "label": "Submenu Item 2",
                 "type": "text",
                 "content": "You clicked item 2"
+            },
+            {
+                "label": "Tools 2",
+                "type": "menu",
+                "items": [
+                    {
+                        "label": "Testone ",
+                        "type": "text",
+                        "content": "You clicked item 1"
+                    }
+                ]
             }
         ]
     }
