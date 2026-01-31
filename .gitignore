@@ -11,3 +11,4 @@ config.json
 
 # Virtual environments
 .venv
+uv.lock
