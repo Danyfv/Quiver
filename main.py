@@ -95,9 +95,16 @@ def main():
     tray_icon.activated.connect(tray_activated)
 
     handler = HotkeyHandler()
-    handler.show_signal.connect(window.show)
-    handler.show_signal.connect(window.activateWindow)
-    handler.show_signal.connect(window.raise_)
+    
+    def toggle_window():
+        if window.isVisible() and window.isActiveWindow():
+            window.hide()
+        else:
+            window.show()
+            window.activateWindow()
+            window.raise_()
+            
+    handler.show_signal.connect(toggle_window)
     
     print(f"Quiver is running. Press {handler.hotkey} to open.")
     
