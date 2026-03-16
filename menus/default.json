@@ -97,5 +97,35 @@
         "parameters": [
             "8.8.8.8"
         ]
+    },
+    {
+        "label": "htmlll",
+        "type": "html",
+        "content": "<h1 style=\"color: red;\">Questo \u00e8 un titolo rosso</h1>\n\n    <p>Questa \u00e8 la prima riga di testo.<br>\n    Questa \u00e8 la seconda riga, subito sotto la prima.</p>\n\n    <p>Questo invece \u00e8 un nuovo paragrafo, con pi\u00f9 spazio sopra.</p>"
+    },
+    {
+        "label": "testacapo",
+        "type": "html",
+        "content": "test <br>\nTESTONE"
+    },
+    {
+        "label": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaasddadasdasd",
+        "type": "html",
+        "content": "<h1 style=\"color: red;\">Questo \u00e8 un titolo rosso</h1>\n\n    <p>Questa \u00e8 la prima riga di testo.<br>\n    Questa \u00e8 la seconda riga, subito sotto la prima.</p>"
+    },
+    {
+        "label": "a",
+        "type": "html",
+        "content": "<h1>Questo \u00e8 un titolo rosso</h1>\n\n    <p>Questa \u00e8 la prima riga di testo.<br>\n    Questa \u00e8 la seconda riga, subito sotto la prima.</p>"
+    },
+    {
+        "label": "testo.<br>",
+        "type": "html",
+        "content": "testo<br>a"
+    },
+    {
+        "label": "test<BR>",
+        "type": "text",
+        "content": "test<BR>test<BR>test<BR>test<BR>test<BR>"
     }
 ]

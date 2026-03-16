@@ -56,7 +56,7 @@ class AddEntryDialog(QWidget):
         h2 = QHBoxLayout()
         h2.addWidget(QLabel("Type:"))
         self.type_combo = QComboBox()
-        self.type_combo.addItems(["text", "python", "bat", "program", "menu"])
+        self.type_combo.addItems(["text", "html", "python", "bat", "program", "menu"])
         h2.addWidget(self.type_combo)
         layout.addLayout(h2)
         
@@ -125,7 +125,7 @@ class AddEntryDialog(QWidget):
         msg.exec()
 
     def on_type_changed(self, text):
-        if text == "text":
+        if text == "text" or text == "html":
             self.cmd_label.setText("Content:")
             self.cmd_input.setEnabled(True)
             self.param_input.setEnabled(False)
@@ -152,7 +152,7 @@ class AddEntryDialog(QWidget):
             return
             
         new_item = {"label": label, "type": itype}
-        if itype == "text":
+        if itype == "text" or itype == "html":
             new_item["content"] = cmd
         elif itype == "menu":
             new_item["items"] = []

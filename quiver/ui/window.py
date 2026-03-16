@@ -2,7 +2,7 @@ import sys
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                              QLineEdit, QListWidget, QTabWidget, QLabel, 
                              QFrame, QPushButton, QTextEdit, QApplication)
-from PyQt6.QtCore import Qt, pyqtSignal, QThread, QSize
+from PyQt6.QtCore import Qt, pyqtSignal, QThread, QSize, QMimeData
 from PyQt6.QtGui import QIcon, QColor, QAction
 
 from ..config import load_menus, load_replacements
@@ -11,7 +11,7 @@ from ..replacer import process_replacements
 from .styles import STYLESHEET
 
 class ExecutionThread(QThread):
-    finished_signal = pyqtSignal(bool, str, str) # success, output, original_text
+    finished_signal = pyqtSignal(bool, str, str, str) # success, output, original_text, cmd_type
 
     def __init__(self, item, replace_config):
         super().__init__()
@@ -26,11 +26,11 @@ class ExecutionThread(QThread):
             # 2. Process replacements
             try:
                 final_output = process_replacements(output, self.replace_config)
-                self.finished_signal.emit(True, final_output, output)
+                self.finished_signal.emit(True, final_output, output, self.item.get("type", ""))
             except Exception as e:
-                self.finished_signal.emit(False, f"Replacement Error: {e}", output)
+                self.finished_signal.emit(False, f"Replacement Error: {e}", output, self.item.get("type", ""))
         else:
-            self.finished_signal.emit(False, output, "")
+            self.finished_signal.emit(False, output, "", self.item.get("type", ""))
 
 class AddEntryThread(QThread):
     finished_signal = pyqtSignal()
@@ -190,6 +190,7 @@ class QuiverWindow(QMainWindow):
         elif itype == "bat": icon = "⚙️"
         elif itype == "python": icon = "🐍"
         elif itype == "text": icon = "📝"
+        elif itype == "html": icon = "🌐"
         elif itype == "menu": icon = "📁"
         
         return f"{icon}  {label}"
@@ -264,11 +265,78 @@ class QuiverWindow(QMainWindow):
         self.thread.finished_signal.connect(self.on_execution_finished)
         self.thread.start()
 
-    def on_execution_finished(self, success, output, original):
+    def set_html_to_clipboard(self, html_str):
+        try:
+            import win32clipboard
+            
+            # Generate standard Windows HTML format representation
+            def get_html_clipboard_string(s):
+                fragment_start = "<!--StartFragment-->"
+                fragment_end = "<!--EndFragment-->"
+                
+                dummy_header = (
+                    "Version:0.9\r\n"
+                    "StartHTML:0000000000\r\n"
+                    "EndHTML:0000000000\r\n"
+                    "StartFragment:0000000000\r\n"
+                    "EndFragment:0000000000\r\n"
+                )
+                
+                prefix = f"<html><body>{fragment_start}"
+                suffix = f"{fragment_end}</body></html>"
+                
+                start_html = len(dummy_header)
+                start_fragment = start_html + len(prefix.encode('utf-8'))
+                end_fragment = start_fragment + len(s.encode('utf-8'))
+                end_html = end_fragment + len(suffix.encode('utf-8'))
+                
+                header = (
+                    f"Version:0.9\r\n"
+                    f"StartHTML:{start_html:010d}\r\n"
+                    f"EndHTML:{end_html:010d}\r\n"
+                    f"StartFragment:{start_fragment:010d}\r\n"
+                    f"EndFragment:{end_fragment:010d}\r\n"
+                )
+                
+                payload = f"{prefix}{s}{suffix}"
+                return header + payload
+
+            html_data = get_html_clipboard_string(html_str).encode('utf-8')
+
+            win32clipboard.OpenClipboard()
+            win32clipboard.EmptyClipboard()
+            
+            try:
+                # Imposta testo per HTML rich (Word, Teams, Email, ecc)
+                format_id = win32clipboard.RegisterClipboardFormat("HTML Format")
+                win32clipboard.SetClipboardData(format_id, html_data)
+                
+                # Imposta testo di fallback puro (per Notepad, IDE, o chat senza formattazione)
+                try:
+                    import re
+                    fallback_text = html_str.replace('<br>', '\n').replace('<BR>', '\n')
+                    fallback_text = re.sub(r'<[^>]+>', '', fallback_text)
+                    win32clipboard.SetClipboardText(fallback_text, win32clipboard.CF_UNICODETEXT)
+                except Exception:
+                    win32clipboard.SetClipboardText(html_str, win32clipboard.CF_UNICODETEXT)
+            finally:
+                win32clipboard.CloseClipboard()
+                
+        except Exception as e:
+            self.log(f"HTML Clipboard Error: {e}")
+            QApplication.clipboard().setText(html_str) # Fallback se fallisce
+
+    def on_execution_finished(self, success, output, original, cmd_type=""):
         if success:
             self.set_status("success")
+            
             self.log(f"Success. Output: {output}")
-            QApplication.clipboard().setText(output)
+            if cmd_type == "html":
+                self.set_html_to_clipboard(output)
+            else:
+                if output:
+                    output = output.replace('<BR>', '\n')
+                QApplication.clipboard().setText(output)
         else:
             self.set_status("error")
             self.log(f"Error: {output}")

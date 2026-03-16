@@ -19,7 +19,7 @@ def execute_command(item):
     
     try:
         # Verifico prima le operazioni di copy
-        if cmd_type == "text":
+        if cmd_type == "text" or cmd_type == "html":
             # Return text content directly
             content = item.get("content", "")
             return True, content
