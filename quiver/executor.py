@@ -9,16 +9,21 @@ def execute_command(item):
     Returns a tuple (success, output_or_error).
     """
     cmd_type = item.get("type")
-    command = item.get("command")
-    
-    if not command:
-        return False, "No command specified."
-
-    resolved_path = resolve_script_path(command)
     
     try:
-        if cmd_type == "python":
+        # Verifico prima le operazioni di copy
+        if cmd_type == "text":
+            # Return text content directly
+            content = item.get("content", "")
+            return True, content
+        elif cmd_type == "python":
             # Run with the same python interpreter
+            command = item.get("command")
+            if not command:
+                return False, "No command specified."
+
+            resolved_path = resolve_script_path(command)
+
             result = subprocess.run(
                 [sys.executable, resolved_path],
                 capture_output=True,
@@ -28,6 +33,10 @@ def execute_command(item):
             )
         elif cmd_type == "bat":
             # Run bat file
+            command = item.get("command")
+            if not command:
+                return False, "No command specified."
+            resolved_path = resolve_script_path(command)
             result = subprocess.run(
                 [resolved_path],
                 shell=True,
@@ -46,6 +55,11 @@ def execute_command(item):
             # I'll assume if it returns immediately, we capture output.
             # If it's a long running process, this might block.
             # For now, I'll treat it as a blocking call to capture output.
+            command = item.get("command")
+            if not command:
+                return False, "No command specified."
+            resolved_path = resolve_script_path(command)
+            
             result = subprocess.run(
                 [resolved_path],
                 capture_output=True,
@@ -53,10 +67,6 @@ def execute_command(item):
                 cwd=os.path.dirname(resolved_path) if os.path.isabs(resolved_path) else None,
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
-        elif cmd_type == "text":
-            # Return text content directly
-            content = item.get("content", "")
-            return True, content
         else:
             return False, f"Unknown type: {cmd_type}"
 
