@@ -193,6 +193,12 @@ class QuiverWindow(QMainWindow):
             label = item.get("label", "Unknown")
             if text in label.lower():
                 self.list_widget.addItem(self.get_display_label(item))
+            elif item.get("type") == "menu":
+                for sub_item in sorted(item.get("items", []), key=lambda x: x.get("label", "").lower()):
+                    sub_label = sub_item.get("label", "Unknown")
+                    if text in sub_label.lower():
+                        self.list_widget.addItem(self.get_display_label(item))
+                        break #Blocco il ciclo per evitare doppioni
         
         if self.list_widget.count() > 0:
             self.list_widget.setCurrentRow(0)
@@ -267,8 +273,11 @@ class QuiverWindow(QMainWindow):
     def enter_submenu(self, item):
         self.menu_stack.append(self.current_items)
         self.current_items = sorted(item.get("items", []), key=lambda x: x.get("label", "").lower())
-        self.search_bar.clear()
-        self.filter_items("")
+        if self.search_bar.text():    
+            self.filter_items(self.search_bar.text())
+        else:
+            self.search_bar.clear()
+            self.filter_items("")
 
     def go_back(self):
         if self.menu_stack:
