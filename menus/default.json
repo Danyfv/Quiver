@@ -55,5 +55,47 @@
                 ]
             }
         ]
+    },
+    {
+        "label": "Test",
+        "type": "menu",
+        "items": [
+            {
+                "label": "aaaaaaaaaaaaaaa",
+                "type": "text",
+                "content": "aaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+                "label": "ppiton",
+                "type": "python",
+                "command": "test.py"
+            }
+        ]
+    },
+    {
+        "label": "asdasdas",
+        "type": "program",
+        "command": "calc.exe"
+    },
+    {
+        "label": "meeeeenuuuuuuuuuuuuu",
+        "type": "menu",
+        "items": []
+    },
+    {
+        "label": "TTTTTTTTTTTTTTTTTTTTTES",
+        "type": "python",
+        "command": "aaaaaaaaaaaaaaaaa",
+        "parameters": [
+            "a"
+        ]
+    },
+    {
+        "label": "pingt",
+        "type": "program",
+        "command": "ping",
+        "parameters": [
+            "8.8.8.8"
+        ]
     }
 ]

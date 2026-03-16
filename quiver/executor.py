@@ -10,6 +10,13 @@ def execute_command(item):
     """
     cmd_type = item.get("type")
     
+    raw_params = item.get("parameters", [])
+    if isinstance(raw_params, str):
+        import shlex
+        params = shlex.split(raw_params)
+    else:
+        params = [str(p) for p in raw_params]
+    
     try:
         # Verifico prima le operazioni di copy
         if cmd_type == "text":
@@ -17,15 +24,15 @@ def execute_command(item):
             content = item.get("content", "")
             return True, content
         elif cmd_type == "python":
-            # Run with the same python interpreter
-            command = item.get("command")
+            # Run with the sgame python interpreter
+            command = item.et("command")
             if not command:
                 return False, "No command specified."
 
             resolved_path = resolve_script_path(command)
 
             result = subprocess.run(
-                [sys.executable, resolved_path],
+                [sys.executable, resolved_path] + params,
                 capture_output=True,
                 text=True,
                 cwd=os.path.dirname(resolved_path) if os.path.isabs(resolved_path) else None,
@@ -37,8 +44,12 @@ def execute_command(item):
             if not command:
                 return False, "No command specified."
             resolved_path = resolve_script_path(command)
+            
+            # Using shell=False is safer with lists, or appending params to the string if shell=True is needed
+            cmd_list = [resolved_path] + params
+            
             result = subprocess.run(
-                [resolved_path],
+                cmd_list,
                 shell=True,
                 capture_output=True,
                 text=True,
@@ -59,9 +70,10 @@ def execute_command(item):
             if not command:
                 return False, "No command specified."
             resolved_path = resolve_script_path(command)
+            cmd_list = [resolved_path] + params
             
             result = subprocess.run(
-                [resolved_path],
+                cmd_list,
                 capture_output=True,
                 text=True,
                 cwd=os.path.dirname(resolved_path) if os.path.isabs(resolved_path) else None,

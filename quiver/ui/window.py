@@ -32,6 +32,23 @@ class ExecutionThread(QThread):
         else:
             self.finished_signal.emit(False, output, "")
 
+class AddEntryThread(QThread):
+    finished_signal = pyqtSignal()
+
+    def __init__(self, script_path, json_path, current_path_json):
+        super().__init__()
+        self.script_path = script_path
+        self.json_path = json_path
+        self.current_path_json = current_path_json
+
+    def run(self):
+        import subprocess
+        subprocess.run(
+            ["uv", "run", self.script_path, self.json_path, self.current_path_json],
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+        self.finished_signal.emit()
+
 class QuiverWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -45,6 +62,7 @@ class QuiverWindow(QMainWindow):
         self.replace_config = load_replacements()
         self.current_items = []
         self.menu_stack = [] # Stack to track sub-menus
+        self.current_path = [] # Track path of submenu labels
         self.old_pos = None
         
         # UI Setup
@@ -113,6 +131,12 @@ class QuiverWindow(QMainWindow):
         self.log_button.clicked.connect(self.toggle_logs)
         self.bottom_layout.addWidget(self.log_button)
         
+        self.add_button = QPushButton("ADD ITEM")
+        self.add_button.setFixedWidth(100)
+        self.add_button.clicked.connect(self.add_menu_item)
+        self.add_button.setStyleSheet("color: #899; border: none; font-weight: bold;")
+        self.bottom_layout.addWidget(self.add_button)
+
         self.reload_button = QPushButton("RELOAD")
         self.reload_button.setFixedWidth(100)
         self.reload_button.clicked.connect(self.reload_config)
@@ -180,6 +204,7 @@ class QuiverWindow(QMainWindow):
         if tab_name in self.menus:
             self.current_items = sorted(self.menus[tab_name], key=lambda x: x.get("label", "").lower())
             self.menu_stack = [] # Reset stack on tab change
+            self.current_path = []
             self.filter_items(self.search_bar.text())
 
     def filter_items(self, text):
@@ -271,7 +296,8 @@ class QuiverWindow(QMainWindow):
             self.resize(600, 600)
 
     def enter_submenu(self, item):
-        self.menu_stack.append(self.current_items)
+        self.menu_stack.append((self.current_items, list(self.current_path)))
+        self.current_path.append(item.get("label"))
         self.current_items = sorted(item.get("items", []), key=lambda x: x.get("label", "").lower())
         if self.search_bar.text():    
             self.filter_items(self.search_bar.text())
@@ -281,7 +307,7 @@ class QuiverWindow(QMainWindow):
 
     def go_back(self):
         if self.menu_stack:
-            self.current_items = self.menu_stack.pop()
+            self.current_items, self.current_path = self.menu_stack.pop()
             self.search_bar.clear()
             self.filter_items("")
 
@@ -290,6 +316,24 @@ class QuiverWindow(QMainWindow):
         self.replace_config = load_replacements()
         self.populate_tabs()
         self.log("Configuration reloaded.")
+
+    def add_menu_item(self):
+        tab_name = self.tabs.tabText(self.tabs.currentIndex())
+        import os, json, subprocess
+        from ..config import MENUS_DIR
+        json_path = os.path.join(MENUS_DIR, f"{tab_name}.json")
+        if not os.path.exists(json_path):
+            self.log(f"JSON not found: {json_path}")
+            return
+            
+        curr_dir = os.path.dirname(os.path.abspath(__file__))
+        script_path = os.path.join(curr_dir, "add_menu_entry.py")
+        
+        self.add_thread = AddEntryThread(script_path, json_path, json.dumps(self.current_path))
+        self.add_thread.finished_signal.connect(self.reload_config)
+        self.add_thread.start()
+        
+        self.log("Started add entry process via uv. Will auto-reload on close.")
 
     def quit_app(self):
         QApplication.quit()
